@@ -1,0 +1,173 @@
+"""
+Тесты для эндпоинта получения ссылки на скачивание файла (GET /v1/disk/resources/download).
+Проверяет корректность формирования URL для скачивания существующих файлов,
+обработку ошибок для несуществующих ресурсов и работу с необязательными параметрами.
+"""
+
+import pytest
+import requests
+
+
+class TestGetDownloadLink:
+    """Тесты для получения ссылки на скачивание файла."""
+
+    def test_get_download_link_success(self, api_client, test_file_path):
+        """
+        Тест успешного получения ссылки на скачивание существующего файла.
+
+        Ожидаемый результат:
+            - Код ответа: 200 OK.
+            - Ответ содержит метод, href и флаг templated.
+            - Полученная ссылка ведет к скачиванию файла.
+        """
+        response = api_client.get(
+            f"{api_client.base_url}/resources/download", params={"path": test_file_path}
+        )
+
+        assert response.status_code == 200, f"Ошибка: {response.text}"
+
+        data = response.json()
+        assert "href" in data, "Ответ должен содержать поле href"
+        assert "method" in data, "Ответ должен содержать поле method"
+        assert data.get("method") == "GET", "Метод скачивания должен быть GET"
+
+        download_response = requests.get(data["href"], stream=True)
+        assert download_response.status_code == 200, "Ссылка для скачивания не работает"
+        download_response.close()
+
+    def test_get_download_link_with_fields(self, api_client, test_file_path):
+        """
+        Тест получения ссылки на скачивание с указанием необязательного параметра fields.
+
+        Ожидаемый результат:
+            - Код ответа: 200 OK.
+            - Ответ содержит только запрошенные поля.
+        """
+        response = api_client.get(
+            f"{api_client.base_url}/resources/download",
+            params={"path": test_file_path, "fields": "href,method"},
+        )
+
+        assert response.status_code == 200, f"Ошибка: {response.text}"
+
+        data = response.json()
+        assert set(data.keys()) == {
+            "href",
+            "method",
+        }
+        assert "templated" not in data
+
+    @pytest.mark.parametrize(
+        "invalid_path, expected_status",
+        [
+            ("", 400),  # Пустой путь
+            ("/nonexistent_file.txt", 404),  # Несуществующий файл
+            (
+                "../invalid_path.txt",
+                404,
+            ),  # API трактует относительный путь как несуществующий ресурс
+        ],
+    )
+    def test_get_download_link_invalid_path(
+        self, api_client, invalid_path, expected_status
+    ):
+        """
+        Параметризованный тест получения ссылки для некорректных путей.
+
+        Аргументы:
+            invalid_path (str): Некорректный или несуществующий путь.
+            expected_status (int): Ожидаемый HTTP-код ошибки.
+
+        Ожидаемый результат:
+            - Сервер возвращает соответствующий код ошибки.
+            - Ответ содержит описание проблемы.
+        """
+        response = api_client.get(
+            f"{api_client.base_url}/resources/download", params={"path": invalid_path}
+        )
+
+        assert response.status_code == expected_status, (
+            f"Ожидался код {expected_status}, получен {response.status_code}. "
+            f"Ответ: {response.text}"
+        )
+
+    def test_get_download_link_for_folder(self, api_client, random_path):
+        """
+        Тест получения ссылки на скачивание папки.
+        API Яндекс.Диска автоматически создает ZIP-архив для папок.
+
+        Ожидаемый результат:
+            - Код ответа: 200 OK.
+            - Ответ содержит href, ведущий на скачивание ZIP-архива.
+        """
+        api_client.put(f"{api_client.base_url}/resources", params={"path": random_path})
+
+        response = api_client.get(
+            f"{api_client.base_url}/resources/download", params={"path": random_path}
+        )
+
+        assert response.status_code == 200, (
+            f"Ожидался успешный код 200 для папки. Получено: {response.status_code}. "
+            f"Ответ: {response.text}"
+        )
+
+        data = response.json()
+        assert "href" in data
+        assert "download" in data["href"] or "zip" in data["href"]
+        api_client.delete(
+            f"{api_client.base_url}/resources", params={"path": random_path}
+        )
+
+    def test_get_download_link_no_auth(self):
+        """
+        Тест попытки получения ссылки без аутентификации.
+
+        Ожидаемый результат:
+            - Код ответа: 401 Unauthorized.
+        """
+        client = requests.Session()
+        client.base_url = "https://cloud-api.yandex.net/v1/disk"
+
+        response = client.get(
+            f"{client.base_url}/resources/download", params={"path": "/some_file.txt"}
+        )
+
+        assert (
+            response.status_code == 401
+        ), f"Ожидался код 401, получен {response.status_code}. Ответ: {response.text}"
+
+    def test_get_download_link_malformed_fields(self, api_client, test_file_path):
+        """
+        Тест получения ссылки с некорректным форматом параметра fields.
+
+        Ожидаемый результат:
+            - Код ответа: 200 (API игнорирует неизвестные поля в fields) или 400.
+        """
+        response = api_client.get(
+            f"{api_client.base_url}/resources/download",
+            params={"path": test_file_path, "fields": "invalid_field,another_invalid"},
+        )
+        if response.status_code == 400:
+            assert (
+                "invalid" in response.text.lower() or "field" in response.text.lower()
+            )
+        else:
+            assert response.status_code == 200
+            data = response.json()
+            assert "href" in data and "method" in data
+
+    def test_get_download_link_special_characters(self, api_client):
+        """
+        Тест получения ссылки для файла со специальными символами в имени.
+
+        Ожидаемый результат:
+            - Код ответа: 404 (файл не существует) или 200 (если файл создан фикстурой).
+        """
+        test_file = "/test_file_with_spaces and (special).txt"
+
+        response = api_client.get(
+            f"{api_client.base_url}/resources/download", params={"path": test_file}
+        )
+
+        assert response.status_code != 400
+        assert response.status_code in [200, 404]

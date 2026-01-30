@@ -1,8 +1,3 @@
-"""
-Набор тестов для эндпоинта создания папки (PUT /v1/disk/resources).
-Проверяет успешное создание и обработку основных ошибок валидации.
-"""
-
 import pytest
 import uuid
 from requests import Session
@@ -13,11 +8,6 @@ class TestCreateFolderResource:
     def test_create_folder_success(self, api_client, random_path):
         """
         Тест успешного создания новой папки.
-
-        Ожидаемый результат:
-            - Код ответа: 201 Created.
-            - Папка создается по указанному пути.
-            - Последующее удаление созданной папки для очистки окружения.
         """
         response = api_client.put(
             f"{api_client.base_url}/resources", params={"path": random_path}
@@ -64,10 +54,6 @@ class TestCreateFolderResource:
     def test_create_folder_nonexistent_parent(self, api_client):
         """
         Тест попытки создания папки внутри несуществующей родительской директории.
-
-        Ожидаемый результат:
-            - Код ответа: 409 Conflict.
-            - В теле ответа содержится указание на несуществующий путь.
         """
         non_existent_parent = f"/non_existent_{uuid.uuid4().hex[:8]}"
         nested_path = f"{non_existent_parent}/new_folder"
@@ -85,14 +71,6 @@ class TestCreateFolderResource:
     def test_create_folder_duplicate_409(self, api_client, random_path):
         """
         Тест попытки создания папки, которая уже существует.
-
-        Шаги:
-            1. Создать папку.
-            2. Повторно отправить запрос на создание папки по тому же пути.
-
-        Ожидаемый результат:
-            - Код ответа на второй запрос: 409 Conflict.
-            - Папка удаляется после теста для очистки.
         """
         api_client.put(f"{api_client.base_url}/resources", params={"path": random_path})
         response = api_client.put(
@@ -106,9 +84,6 @@ class TestCreateFolderResource:
     def test_create_folder_no_token_401(self):
         """
         Тест попытки создания папки без предоставления OAuth-токена.
-
-        Ожидаемый результат:
-            - Код ответа: 401 Unauthorized.
         """
 
         client = Session()

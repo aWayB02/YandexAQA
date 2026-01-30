@@ -9,11 +9,6 @@ class TestUnpublishResource:
     def test_unpublish_file_success(self, api_client, published_file_path):
         """
         Тест успешной отмены публикации файла.
-
-        Ожидаемый результат:
-            - Код ответа: 200 OK.
-            - Ответ содержит ссылку (href) на операцию.
-            - У файла пропадает public_url.
         """
         check_response = api_client.get(
             f"{api_client.base_url}/resources",
@@ -84,9 +79,6 @@ class TestUnpublishResource:
     def test_unpublish_already_unpublished(self, api_client, test_file_path):
         """
         Тест попытки отменить публикацию уже неопубликованного ресурса.
-
-        Ожидаемый результат:
-            - Код ответа: 409 Conflict или 200 OK (идемпотентность).
         """
         response = api_client.put(
             f"{api_client.base_url}/resources/unpublish",
@@ -101,9 +93,6 @@ class TestUnpublishResource:
     def test_unpublish_nonexistent_resource(self, api_client):
         """
         Тест попытки отменить публикацию несуществующего ресурса.
-
-        Ожидаемый результат:
-            - Код ответа: 404 Not Found.
         """
         nonexistent_path = f"/nonexistent_{uuid.uuid4().hex[:8]}.txt"
 
@@ -126,9 +115,6 @@ class TestUnpublishResource:
     def test_unpublish_invalid_path(self, api_client, invalid_path, expected_status):
         """
         Параметризованный тест для некорректных путей.
-
-        Ожидаемый результат:
-            - Код ответа: 400 Bad Request.
         """
         response = api_client.put(
             f"{api_client.base_url}/resources/unpublish", params={"path": invalid_path}
@@ -143,9 +129,6 @@ class TestUnpublishResource:
     def test_unpublish_no_auth(self):
         """
         Тест попытки отменить публикацию без аутентификации.
-
-        Ожидаемый результат:
-            - Код ответа: 401 Unauthorized.
         """
         from requests import Session
 
@@ -191,9 +174,6 @@ class TestUnpublishResource:
     def test_publish_unpublish_cycle(self, api_client, test_file_path):
         """
         Тест полного цикла публикации и отмены публикации.
-
-        Ожидаемый результат:
-            - Ресурс успешно публикуется и затем успешно "отпубликовывается".
         """
         publish_response = api_client.put(
             f"{api_client.base_url}/resources/publish",

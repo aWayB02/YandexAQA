@@ -9,11 +9,7 @@ class TestPublishResource:
 
     def test_publish_file_success(self, api_client, test_file_path):
         """
-        Тест успешной публикации файла с использованием PUT и тела запроса.
-
-        Ожидаемый результат:
-            - Код ответа: 200 OK, 201 Created или 202 Accepted.
-            - Ответ содержит ссылку (href) на опубликованный ресурс или операцию.
+        Тест успешной публикации файла.
         """
         response = api_client.put(
             f"{api_client.base_url}/resources/publish",
@@ -54,9 +50,6 @@ class TestPublishResource:
     def test_publish_already_public(self, api_client, test_file_path):
         """
         Тест попытки опубликовать уже опубликованный ресурс.
-
-        Ожидаемый результат:
-            - Код ответа: 409 Conflict ИЛИ 200/201 (идемпотентность).
         """
         api_client.put(
             f"{api_client.base_url}/resources/publish",
@@ -101,7 +94,7 @@ class TestPublishResource:
 
     def test_publish_with_fields(self, api_client, test_file_path):
         """
-        Тест публикации с ограничением возвращаемых полей (параметр fields).
+        Тест публикации с ограничением возвращаемых полей.
         """
         response = api_client.put(
             f"{api_client.base_url}/resources/publish",

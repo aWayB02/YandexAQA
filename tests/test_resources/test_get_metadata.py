@@ -8,11 +8,6 @@ class TestGetResourceMetadata:
     def test_get_file_metadata_success(self, api_client, test_file_path):
         """
         Тест успешного получения метаданных существующего файла.
-
-        Ожидаемый результат:
-            - Код ответа: 200 OK.
-            - Ответ содержит базовые поля: path, type, name.
-            - Тип ресурса (type) равен 'file'.
         """
         response = api_client.get(
             f"{api_client.base_url}/resources", params={"path": test_file_path}
@@ -27,11 +22,6 @@ class TestGetResourceMetadata:
     def test_get_folder_metadata_success(self, api_client, random_path):
         """
         Тест успешного получения метаданных существующей папки.
-
-        Ожидаемый результат:
-            - Код ответа: 200 OK.
-            - Тип ресурса (type) равен 'dir'.
-            - Ответ может содержать секцию _embedded со списком вложений.
         """
         api_client.put(f"{api_client.base_url}/resources", params={"path": random_path})
 
@@ -43,7 +33,6 @@ class TestGetResourceMetadata:
         data = response.json()
         assert data["type"] == "dir"
 
-        # Очистка
         api_client.delete(
             f"{api_client.base_url}/resources", params={"path": random_path}
         )
@@ -53,11 +42,6 @@ class TestGetResourceMetadata:
     ):
         """
         Тест получения метаданных папки с проверкой содержимого (_embedded).
-
-        Ожидаемый результат:
-            - Код ответа: 200 OK.
-            - Ответ содержит секцию _embedded с массивом items.
-            - В items присутствует созданный тестовый файл.
         """
         # Создаем папку
         api_client.put(f"{api_client.base_url}/resources", params={"path": random_path})
@@ -87,14 +71,6 @@ class TestGetResourceMetadata:
     ):
         """
         Параметризованный тест с параметром fields.
-
-        Аргументы:
-            fields (str): Список полей через запятую.
-            expected_field_count (int): Ожидаемое количество полей в ответе.
-
-        Ожидаемый результат:
-            - Код ответа: 200 OK.
-            - Ответ содержит только запрошенные поля (и возможно служебные).
         """
         response = api_client.get(
             f"{api_client.base_url}/resources",
@@ -118,10 +94,6 @@ class TestGetResourceMetadata:
     ):
         """
         Тест работы пагинации через limit и offset для папки с содержимым.
-
-        Ожидаемый результат:
-            - Код ответа: 200 OK.
-            - Ответ содержит секцию _embedded с корректным limit и offset.
         """
         api_client.put(f"{api_client.base_url}/resources", params={"path": random_path})
 
@@ -144,10 +116,6 @@ class TestGetResourceMetadata:
     def test_get_metadata_with_preview_params(self, api_client, test_file_path):
         """
         Тест работы параметров превью (preview_crop, preview_size).
-
-        Ожидаемый результат:
-            - Код ответа: 200 OK.
-            - При наличии превью возвращается ссылка в поле preview.
         """
         response = api_client.get(
             f"{api_client.base_url}/resources",
@@ -166,8 +134,8 @@ class TestGetResourceMetadata:
     @pytest.mark.parametrize(
         "invalid_path, expected_status",
         [
-            ("", 400),  # Пустой путь - явная ошибка клиента
-            ("/nonexistent_folder", 404),  # Несуществующий ресурс
+            ("", 400), 
+            ("/nonexistent_folder", 404),
             (
                 "../invalid_path",
                 404,
@@ -197,9 +165,6 @@ class TestGetResourceMetadata:
     def test_get_metadata_no_auth(self):
         """
         Тест попытки получения метаданных без аутентификации.
-
-        Ожидаемый результат:
-            - Код ответа: 401 Unauthorized.
         """
         client = Session()
         client.base_url = "https://cloud-api.yandex.net/v1/disk"
@@ -210,11 +175,6 @@ class TestGetResourceMetadata:
     def test_get_metadata_root_folder(self, api_client):
         """
         Тест получения метаданных корневой папки Диска.
-
-        Ожидаемый результат:
-            - Код ответа: 200 OK.
-            - Тип ресурса равен 'dir'.
-            - Содержит секцию _embedded с содержимым корня.
         """
         response = api_client.get(
             f"{api_client.base_url}/resources", params={"path": "/"}
@@ -229,10 +189,6 @@ class TestGetResourceMetadata:
     def test_get_metadata_special_file(self, api_client):
         """
         Тест получения метаданных для файла со специальными символами.
-
-        Ожидаемый результат:
-            - Код ответа: 200 OK или 404, если файл не существует.
-            - Корректная обработка кодирования в URL.
         """
         special_path = "/test file with spaces & special?chars=1.txt"
         response = api_client.get(

@@ -8,11 +8,6 @@ class TestGetDownloadLink:
     def test_get_download_link_success(self, api_client, test_file_path):
         """
         Тест успешного получения ссылки на скачивание существующего файла.
-
-        Ожидаемый результат:
-            - Код ответа: 200 OK.
-            - Ответ содержит метод, href и флаг templated.
-            - Полученная ссылка ведет к скачиванию файла.
         """
         response = api_client.get(
             f"{api_client.base_url}/resources/download", params={"path": test_file_path}
@@ -32,10 +27,6 @@ class TestGetDownloadLink:
     def test_get_download_link_with_fields(self, api_client, test_file_path):
         """
         Тест получения ссылки на скачивание с указанием необязательного параметра fields.
-
-        Ожидаемый результат:
-            - Код ответа: 200 OK.
-            - Ответ содержит только запрошенные поля.
         """
         response = api_client.get(
             f"{api_client.base_url}/resources/download",
@@ -54,12 +45,12 @@ class TestGetDownloadLink:
     @pytest.mark.parametrize(
         "invalid_path, expected_status",
         [
-            ("", 400),  # Пустой путь
-            ("/nonexistent_file.txt", 404),  # Несуществующий файл
+            ("", 400),
+            ("/nonexistent_file.txt", 404),
             (
                 "../invalid_path.txt",
                 404,
-            ),  # API трактует относительный путь как несуществующий ресурс
+            ),
         ],
     )
     def test_get_download_link_invalid_path(
@@ -67,10 +58,6 @@ class TestGetDownloadLink:
     ):
         """
         Параметризованный тест получения ссылки для некорректных путей.
-
-        Аргументы:
-            invalid_path (str): Некорректный или несуществующий путь.
-            expected_status (int): Ожидаемый HTTP-код ошибки.
 
         Ожидаемый результат:
             - Сервер возвращает соответствующий код ошибки.
@@ -88,11 +75,6 @@ class TestGetDownloadLink:
     def test_get_download_link_for_folder(self, api_client, random_path):
         """
         Тест получения ссылки на скачивание папки.
-        API Яндекс.Диска автоматически создает ZIP-архив для папок.
-
-        Ожидаемый результат:
-            - Код ответа: 200 OK.
-            - Ответ содержит href, ведущий на скачивание ZIP-архива.
         """
         api_client.put(f"{api_client.base_url}/resources", params={"path": random_path})
 
@@ -115,9 +97,6 @@ class TestGetDownloadLink:
     def test_get_download_link_no_auth(self):
         """
         Тест попытки получения ссылки без аутентификации.
-
-        Ожидаемый результат:
-            - Код ответа: 401 Unauthorized.
         """
         client = requests.Session()
         client.base_url = "https://cloud-api.yandex.net/v1/disk"
@@ -133,9 +112,6 @@ class TestGetDownloadLink:
     def test_get_download_link_malformed_fields(self, api_client, test_file_path):
         """
         Тест получения ссылки с некорректным форматом параметра fields.
-
-        Ожидаемый результат:
-            - Код ответа: 200 (API игнорирует неизвестные поля в fields) или 400.
         """
         response = api_client.get(
             f"{api_client.base_url}/resources/download",
@@ -153,9 +129,6 @@ class TestGetDownloadLink:
     def test_get_download_link_special_characters(self, api_client):
         """
         Тест получения ссылки для файла со специальными символами в имени.
-
-        Ожидаемый результат:
-            - Код ответа: 404 (файл не существует) или 200 (если файл создан фикстурой).
         """
         test_file = "/test_file_with_spaces and (special).txt"
 

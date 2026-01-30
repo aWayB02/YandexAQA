@@ -119,8 +119,8 @@ class TestUnpublishResource:
     @pytest.mark.parametrize(
         "invalid_path, expected_status",
         [
-            ("", 400),  # Пустой путь
-            ("../invalid_path", 400),  # Некорректный путь
+            ("", 400),
+            ("../invalid_path", 400),
         ],
     )
     def test_unpublish_invalid_path(self, api_client, invalid_path, expected_status):
@@ -152,7 +152,6 @@ class TestUnpublishResource:
         client = Session()
         client.base_url = "https://cloud-api.yandex.net/v1/disk"
 
-        # Отменяем публикацию (ИСПРАВЛЕНО: PUT вместо DELETE)
         response = client.put(
             f"{client.base_url}/resources/unpublish", params={"path": "/some_file.txt"}
         )
@@ -222,7 +221,6 @@ class TestUnpublishResource:
             print("Файл не опубликовался, пропускаем тест отмены")
             pytest.skip("Файл не опубликовался после запроса публикации")
 
-        # Отменяем публикацию (ИСПРАВЛЕНО: PUT вместо DELETE)
         unpublish_response = api_client.put(
             f"{api_client.base_url}/resources/unpublish",
             params={"path": test_file_path},

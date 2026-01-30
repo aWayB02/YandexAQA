@@ -26,3 +26,13 @@ make build
 ```bash
 make test
 ```
+
+### Получить shell в контейнере
+```bash
+make shell
+```
+
+### Очистка
+```bash
+make clean
+```

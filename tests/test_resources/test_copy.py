@@ -38,7 +38,6 @@ class TestCopyResource:
 
             time.sleep(3)  # Даем время на выполнение
 
-        # В любом случае проверяем, что папка появилась
         check_response = api_client.get(
             f"{api_client.base_url}/resources", params={"path": copy_path}
         )
@@ -86,13 +85,11 @@ class TestCopyResource:
         """
         copy_path = f"/conflict_test_file_{uuid.uuid4().hex[:8]}.txt"
 
-        # Создаем файл по целевому пути
         api_client.post(
             f"{api_client.base_url}/resources/copy",
             params={"from": test_file_path, "path": copy_path},
         )
 
-        # Пытаемся скопировать снова без перезаписи
         response = api_client.post(
             f"{api_client.base_url}/resources/copy",
             params={"from": test_file_path, "path": copy_path, "overwrite": "false"},
@@ -144,20 +141,18 @@ class TestCopyResource:
         if response.status_code == 202:
             assert "operation" in data["href"] or data.get("templated") is True
 
-        # Очистка (после асинхронной операции может потребоваться ожидание)
         if response.status_code == 201:
             api_client.delete(
                 f"{api_client.base_url}/resources", params={"path": copy_path}
             )
         elif response.status_code == 202:
-            # Для асинхронной операции можно попробовать удалить через некоторое время
             time.sleep(2)  # Краткая пауза
             try:
                 api_client.delete(
                     f"{api_client.base_url}/resources", params={"path": copy_path}
                 )
             except:
-                pass  # Игнорируем ошибки при удалении
+                pass 
 
     def test_copy_with_fields(self, api_client, test_file_path):
         """
@@ -208,7 +203,6 @@ class TestCopyResource:
         if from_path == "VALID_FILE_PLACEHOLDER":
             from_path = test_file_path
 
-        # Для целевого пути тоже добавляем уникальность, чтобы избежать конфликтов
         if to_path == "/copy.txt":
             to_path = f"/copy_{uuid.uuid4().hex[:4]}.txt"
 

@@ -5,7 +5,7 @@
 
 import pytest
 import uuid
-
+from requests import Session
 
 class TestCreateFolderResource:
     """Тесты для проверки успешного создания и обработки основных ошибок валидации"""
@@ -110,7 +110,6 @@ class TestCreateFolderResource:
         Ожидаемый результат:
             - Код ответа: 401 Unauthorized.
         """
-        from requests import Session
 
         client = Session()
         client.base_url = "https://cloud-api.yandex.net/v1/disk"

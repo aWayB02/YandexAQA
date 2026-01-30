@@ -139,9 +139,9 @@ class TestEmptyTrash:
     @pytest.mark.parametrize(
         "invalid_async_param",
         [
-            "invalid_value",  # Некорректное значение
-            "123",  # Число вместо boolean
-            "",  # Пустое значение
+            "invalid_value", 
+            "123",
+            "",
         ],
     )
     def test_empty_trash_invalid_async_param(self, api_client, invalid_async_param):

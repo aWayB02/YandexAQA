@@ -11,11 +11,6 @@ class TestGetTrashResources:
         """
         Тест успешного получения корня корзины.
 
-        Ожидаемый результат:
-            - Код ответа: 200 OK.
-            - Ответ содержит обязательные поля: path, type, _embedded.
-            - Тип ресурса (type) равен 'dir'.
-            - Поле _embedded содержит массив items.
         """
         response = api_client.get(
             f"{api_client.base_url}/trash/resources", params={"path": "/"}
@@ -49,11 +44,6 @@ class TestGetTrashResources:
     def test_get_trash_with_limit_offset(self, api_client):
         """
         Тест получения содержимого корзины с параметрами пагинации.
-
-        Ожидаемый результат:
-            - Код ответа: 200 OK.
-            - В ответе содержатся переданные значения limit и offset.
-            - Количество элементов в items не превышает limit.
         """
         limit = 5
         offset = 0
@@ -124,9 +114,6 @@ class TestGetTrashResources:
     def test_get_trash_nonexistent_path(self, api_client):
         """
         Тест запроса несуществующего пути в корзине.
-
-        Ожидаемый результат:
-            - Код ответа: 404 Not Found.
         """
         nonexistent_path = f"/nonexistent_in_trash_{uuid.uuid4().hex[:8]}"
 
@@ -146,9 +133,6 @@ class TestGetTrashResources:
     def test_get_trash_no_auth(self):
         """
         Тест попытки получения содержимого корзины без аутентификации.
-
-        Ожидаемый результат:
-            - Код ответа: 401 Unauthorized.
         """
 
         client = Session()

@@ -10,10 +10,6 @@ class TestEmptyTrash:
     def test_empty_trash_completely_success(self, api_client):
         """
         Тест успешной полной очистки корзины (без указания path).
-
-        Ожидаемый результат:
-            - Код ответа: 204 No Content (синхронно) или 202 Accepted (асинхронно).
-            - Если 202, в ответе есть ссылка на асинхронную операцию.
         """
         response = api_client.delete(f"{api_client.base_url}/trash/resources")
 
@@ -29,10 +25,6 @@ class TestEmptyTrash:
     def test_empty_trash_completely_force_async(self, api_client):
         """
         Тест принудительной асинхронной полной очистки корзины.
-
-        Ожидаемый результат:
-            - Код ответа: 202 Accepted.
-            - В ответе есть ссылка на асинхронную операцию.
         """
         # Ждем, чтобы избежать ошибки 423
         time.sleep(2)
@@ -59,10 +51,6 @@ class TestEmptyTrash:
     def test_empty_trash_with_fields(self, api_client):
         """
         Тест полной очистки корзины с ограничением возвращаемых полей.
-
-        Ожидаемый результат:
-            - При ответе 202: только указанные поля в ответе.
-            - При ответе 204: пустое тело.
         """
         # Ждем, чтобы избежать ошибки 423
         time.sleep(2)
@@ -87,9 +75,6 @@ class TestEmptyTrash:
     def test_delete_nonexistent_item_from_trash(self, api_client):
         """
         Тест удаления несуществующего ресурса из корзины.
-
-        Ожидаемый результат:
-            - Код ответа: 404 Not Found.
         """
         time.sleep(2)
 
@@ -105,9 +90,6 @@ class TestEmptyTrash:
     def test_empty_trash_no_auth(self):
         """
         Тест попытки очистки корзины без аутентификации.
-
-        Ожидаемый результат:
-            - Код ответа: 401 Unauthorized.
         """
 
         client = Session()
@@ -122,10 +104,6 @@ class TestEmptyTrash:
     def test_empty_trash_root_path(self, api_client):
         """
         Тест очистки корзины с указанием корневого пути (path=/).
-        Согласно документации, это должно очистить всю корзину.
-
-        Ожидаемый результат:
-            - Код ответа: 204 или 202.
         """
         # Ждем, чтобы избежать ошибки 423
         time.sleep(2)
@@ -147,9 +125,6 @@ class TestEmptyTrash:
     def test_empty_trash_invalid_async_param(self, api_client, invalid_async_param):
         """
         Тест с некорректным значением параметра force_async.
-
-        Ожидаемый результат:
-            - Код ответа: 400 Bad Request или игнорирование параметра.
         """
         time.sleep(5)
 
@@ -167,9 +142,6 @@ class TestEmptyTrash:
     def test_empty_trash_async_operation_status(self, api_client):
         """
         Тест проверки статуса асинхронной операции очистки корзины.
-
-        Ожидаемый результат:
-            - При ответе 202: ссылка ведет на операцию, которую можно опросить.
         """
         time.sleep(2)
 
@@ -197,9 +169,6 @@ class TestEmptyTrash:
     def test_consecutive_empty_trash_requests(self, api_client):
         """
         Тест последовательных запросов на очистку уже пустой корзины.
-
-        Ожидаемый результат:
-            - Код ответа: 204 или 202 (очистка пустой корзины допустима).
         """
         # Ждем, чтобы избежать ошибки 423
         time.sleep(2)

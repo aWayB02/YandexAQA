@@ -1,8 +1,3 @@
-"""
-/v1/disk/trash/resources
-Получить содержимое Корзины
-"""
-
 import pytest
 import uuid
 import time

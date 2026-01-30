@@ -8,6 +8,7 @@ import uuid
 
 
 class TestCreateFolderResource:
+    """Тесты для проверки успешного создания и обработки основных ошибок валидации"""
 
     def test_create_folder_success(self, api_client, random_path):
         """

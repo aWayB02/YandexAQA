@@ -1,16 +1,10 @@
-"""
-Тесты для эндпоинта публикации ресурса (PUT /v1/disk/resources/publish).
-Требует обязательного тела запроса (public_settings).
-"""
-
 import pytest
 from requests import Session
 
 
 class TestPublishResource:
-    """Тесты для публикации ресурса (с использованием PUT и body)."""
+    """Тесты для публикации ресурса"""
 
-    # для начала возьмем пустые настройки
     MINIMAL_BODY = {"public_settings": {}}
 
     def test_publish_file_success(self, api_client, test_file_path):
@@ -64,21 +58,18 @@ class TestPublishResource:
         Ожидаемый результат:
             - Код ответа: 409 Conflict ИЛИ 200/201 (идемпотентность).
         """
-        # Первая публикация
         api_client.put(
             f"{api_client.base_url}/resources/publish",
             params={"path": test_file_path},
             json=self.MINIMAL_BODY,
         )
 
-        # Вторая попытка
         response = api_client.put(
             f"{api_client.base_url}/resources/publish",
             params={"path": test_file_path},
             json=self.MINIMAL_BODY,
         )
 
-        # API может вернуть 409 (конфликт) или 200/201 (уже опубликовано, но ок)
         assert response.status_code in [
             200,
             201,

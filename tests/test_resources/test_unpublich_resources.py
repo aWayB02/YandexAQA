@@ -1,8 +1,3 @@
-"""
-Тесты для эндпоинта отмены публикации ресурса (PUT /v1/disk/resources/unpublish).
-Проверяет снятие публикации с файлов и папок.
-"""
-
 import pytest
 import uuid
 import time
@@ -20,7 +15,6 @@ class TestUnpublishResource:
             - Ответ содержит ссылку (href) на операцию.
             - У файла пропадает public_url.
         """
-        # Сначала проверяем, что файл опубликован
         check_response = api_client.get(
             f"{api_client.base_url}/resources",
             params={"path": published_file_path, "fields": "public_url"},
@@ -32,19 +26,16 @@ class TestUnpublishResource:
         ):
             pytest.skip("Тестовый файл не опубликован, пропускаем тест")
 
-        # Отменяем публикацию (ИСПРАВЛЕНО: PUT вместо DELETE)
         response = api_client.put(
             f"{api_client.base_url}/resources/unpublish",
             params={"path": published_file_path},
         )
 
-        # Ожидаем успешный код 200
         assert response.status_code == 200, f"Ошибка: {response.text}"
 
         data = response.json()
         assert "href" in data, "Ответ должен содержать поле href"
 
-        # Проверяем, что публикация действительно отменена
         time.sleep(2)  # Даем время на обработку
 
         final_check = api_client.get(
@@ -60,13 +51,10 @@ class TestUnpublishResource:
         """
         Тест успешной отмены публикации папки.
         """
-        # Создаем папку, публикуем её, затем отменяем публикацию
         folder_path = f"/test_folder_{uuid.uuid4().hex[:8]}"
 
-        # Создаем папку
         api_client.put(f"{api_client.base_url}/resources", params={"path": folder_path})
 
-        # Публикуем папку
         publish_response = api_client.put(
             f"{api_client.base_url}/resources/publish",
             params={"path": folder_path},
@@ -74,7 +62,6 @@ class TestUnpublishResource:
         )
 
         if publish_response.status_code not in [200, 201, 202]:
-            # Очищаем и пропускаем тест
             api_client.delete(
                 f"{api_client.base_url}/resources", params={"path": folder_path}
             )
@@ -84,14 +71,12 @@ class TestUnpublishResource:
 
         time.sleep(2)
 
-        # Отменяем публикацию (ИСПРАВЛЕНО: PUT вместо DELETE)
         response = api_client.put(
             f"{api_client.base_url}/resources/unpublish", params={"path": folder_path}
         )
 
         assert response.status_code == 200, f"Ошибка: {response.text}"
 
-        # Очистка
         api_client.delete(
             f"{api_client.base_url}/resources", params={"path": folder_path}
         )
@@ -103,14 +88,11 @@ class TestUnpublishResource:
         Ожидаемый результат:
             - Код ответа: 409 Conflict или 200 OK (идемпотентность).
         """
-        # Отменяем публикацию (ИСПРАВЛЕНО: PUT вместо DELETE)
         response = api_client.put(
             f"{api_client.base_url}/resources/unpublish",
             params={"path": test_file_path},
         )
 
-        # API может вернуть 409 (конфликт) или 200 (уже не опубликовано, но ок)
-        # Документация не уточняет, так что проверяем оба варианта
         assert response.status_code in [
             200,
             409,
@@ -125,7 +107,6 @@ class TestUnpublishResource:
         """
         nonexistent_path = f"/nonexistent_{uuid.uuid4().hex[:8]}.txt"
 
-        # Отменяем публикацию (ИСПРАВЛЕНО: PUT вместо DELETE)
         response = api_client.put(
             f"{api_client.base_url}/resources/unpublish",
             params={"path": nonexistent_path},
@@ -149,12 +130,10 @@ class TestUnpublishResource:
         Ожидаемый результат:
             - Код ответа: 400 Bad Request.
         """
-        # Отменяем публикацию (ИСПРАВЛЕНО: PUT вместо DELETE)
         response = api_client.put(
             f"{api_client.base_url}/resources/unpublish", params={"path": invalid_path}
         )
 
-        # В зависимости от реального поведения API, ожидаем 400 или возможен 404
         if response.status_code != 200:
             assert response.status_code in [400, 404], (
                 f"Ожидался код из [400, 404], получен {response.status_code}. "
@@ -186,7 +165,6 @@ class TestUnpublishResource:
         """
         Тест отмены публикации с ограничением возвращаемых полей.
         """
-        # Проверяем, что файл опубликован
         check_response = api_client.get(
             f"{api_client.base_url}/resources",
             params={"path": published_file_path, "fields": "public_url"},
@@ -198,7 +176,6 @@ class TestUnpublishResource:
         ):
             pytest.skip("Тестовый файл не опубликован")
 
-        # Отменяем публикацию (ИСПРАВЛЕНО: PUT вместо DELETE)
         response = api_client.put(
             f"{api_client.base_url}/resources/unpublish",
             params={"path": published_file_path, "fields": "href,method"},
@@ -206,7 +183,6 @@ class TestUnpublishResource:
 
         if response.status_code == 200:
             data = response.json()
-            # Проверяем, что в ответе только указанные поля
             allowed_fields = {"href", "method", "templated"}
             actual_fields = set(data.keys())
             assert actual_fields.issubset(
@@ -220,7 +196,6 @@ class TestUnpublishResource:
         Ожидаемый результат:
             - Ресурс успешно публикуется и затем успешно "отпубликовывается".
         """
-        # Публикуем файл
         publish_response = api_client.put(
             f"{api_client.base_url}/resources/publish",
             params={"path": test_file_path},
@@ -233,7 +208,6 @@ class TestUnpublishResource:
         # Ждем завершения публикации
         time.sleep(3)
 
-        # Проверяем, что файл опубликован
         check_published = api_client.get(
             f"{api_client.base_url}/resources",
             params={"path": test_file_path, "fields": "public_url"},

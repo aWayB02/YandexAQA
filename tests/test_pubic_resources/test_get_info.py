@@ -103,7 +103,7 @@ class TestGetPublicResource:
 
     def test_get_public_file_info_all_fields(self, api_client, published_file_path):
         """Тест получения информации о публичном файле со всеми полями."""
-        # Получаем публичный URL файла
+
         file_info = api_client.get(
             f"{api_client.base_url}/resources",
             params={"path": published_file_path, "fields": "public_url"},
@@ -129,7 +129,6 @@ class TestGetPublicResource:
         assert response.status_code == 200
         data = response.json()
 
-        # Проверяем основные поля
         assert "name" in data
         assert "type" in data
         assert "public_key" in data or "public_url" in data
@@ -202,7 +201,6 @@ class TestGetPublicResource:
             if not public_url:
                 pytest.skip("Папка не опубликовалась")
 
-            # Получаем информацию о папке с limit=1
             response = api_client.get(
                 f"{api_client.base_url}/public/resources",
                 params={"public_key": public_url, "limit": 1, "fields": "_embedded"},

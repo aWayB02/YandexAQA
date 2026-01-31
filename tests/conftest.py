@@ -108,7 +108,6 @@ def test_image_file_path(api_client):
     file_name = f"test_image_{uuid.uuid4().hex[:8]}.jpg"
     file_path = f"/{file_name}"
 
-    # Создаем временное изображение
     with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
         img = Image.new("RGB", (100, 100), color="red")
         img.save(tmp.name, "JPEG")
@@ -223,7 +222,7 @@ def published_file_path(api_client, test_file_path):
             f"Не удалось опубликовать файл для теста отмены публикации: {publish_response.status_code}"
         )
 
-    time.sleep(3)
+    time.sleep(4)
 
     check_response = api_client.get(
         f"{api_client.base_url}/resources",

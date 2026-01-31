@@ -22,7 +22,6 @@ class TestCopyResource:
             params={"from": folder_with_content, "path": copy_path},
         )
 
-        # Допустимы оба кода успеха
         assert response.status_code in [201, 202], (
             f"Ожидался код 201 или 202, получен {response.status_code}. "
             f"Ответ: {response.text}"
@@ -31,12 +30,11 @@ class TestCopyResource:
         data = response.json()
         assert "href" in data
 
-        # Если операция асинхронная (202), ссылка ведет на статус операции
         if response.status_code == 202:
             assert "operations" in data["href"]
             import time
 
-            time.sleep(3)  # Даем время на выполнение
+            time.sleep(3)
 
         check_response = api_client.get(
             f"{api_client.base_url}/resources", params={"path": copy_path}
@@ -58,7 +56,6 @@ class TestCopyResource:
         """
         copy_path = f"/overwrite_test_file_{uuid.uuid4().hex[:8]}.txt"
 
-        # Создаем файл по целевому пути
         api_client.post(
             f"{api_client.base_url}/resources/copy",
             params={"from": test_file_path, "path": copy_path},
@@ -146,13 +143,14 @@ class TestCopyResource:
                 f"{api_client.base_url}/resources", params={"path": copy_path}
             )
         elif response.status_code == 202:
-            time.sleep(2)  # Краткая пауза
+            time.sleep(2)
+
             try:
                 api_client.delete(
                     f"{api_client.base_url}/resources", params={"path": copy_path}
                 )
             except:
-                pass 
+                pass
 
     def test_copy_with_fields(self, api_client, test_file_path):
         """
@@ -173,7 +171,6 @@ class TestCopyResource:
             data = response.json()
             assert set(data.keys()) == {"href", "method"}
 
-        # Очистка
         if response.status_code in [201, 202]:
             try:
                 api_client.delete(

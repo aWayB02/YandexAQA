@@ -1,6 +1,7 @@
 import pytest
 import uuid
 import time
+from requests import Session
 
 
 class TestUnpublishResource:
@@ -31,7 +32,7 @@ class TestUnpublishResource:
         data = response.json()
         assert "href" in data, "Ответ должен содержать поле href"
 
-        time.sleep(2)  # Даем время на обработку
+        time.sleep(2)
 
         final_check = api_client.get(
             f"{api_client.base_url}/resources",
@@ -130,7 +131,6 @@ class TestUnpublishResource:
         """
         Тест попытки отменить публикацию без аутентификации.
         """
-        from requests import Session
 
         client = Session()
         client.base_url = "https://cloud-api.yandex.net/v1/disk"
@@ -184,7 +184,6 @@ class TestUnpublishResource:
         if publish_response.status_code not in [200, 201, 202]:
             pytest.skip(f"Не удалось опубликовать файл: {publish_response.status_code}")
 
-        # Ждем завершения публикации
         time.sleep(3)
 
         check_published = api_client.get(
@@ -210,7 +209,6 @@ class TestUnpublishResource:
             unpublish_response.status_code == 200
         ), f"Ошибка отмены публикации: {unpublish_response.text}"
 
-        # Проверяем, что публикация отменена
         time.sleep(2)
 
         check_unpublished = api_client.get(

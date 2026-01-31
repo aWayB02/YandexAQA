@@ -134,7 +134,7 @@ class TestGetResourceMetadata:
     @pytest.mark.parametrize(
         "invalid_path, expected_status",
         [
-            ("", 400), 
+            ("", 400),
             ("/nonexistent_folder", 404),
             (
                 "../invalid_path",

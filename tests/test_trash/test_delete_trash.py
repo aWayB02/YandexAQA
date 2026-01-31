@@ -117,7 +117,7 @@ class TestEmptyTrash:
     @pytest.mark.parametrize(
         "invalid_async_param",
         [
-            "invalid_value", 
+            "invalid_value",
             "123",
             "",
         ],
@@ -170,7 +170,6 @@ class TestEmptyTrash:
         """
         Тест последовательных запросов на очистку уже пустой корзины.
         """
-        # Ждем, чтобы избежать ошибки 423
         time.sleep(2)
 
         response1 = api_client.delete(f"{api_client.base_url}/trash/resources")
